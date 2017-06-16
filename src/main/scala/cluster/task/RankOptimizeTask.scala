@@ -8,7 +8,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{HashPartitioner, SparkContext}
 
 /**
-  * Created by admin on 2016/9/14.
+  * Created by admin on 2016/19/14.
   */
 object RankOptimizeTask {
 
