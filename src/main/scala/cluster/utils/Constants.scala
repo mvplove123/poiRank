@@ -56,6 +56,10 @@ object Constants{
   val keyPath = "/user/go2data_rank/taoyongbo/output/key/"
 
   val multiOptimizeRankOutputPath = "/user/go2data_rank/taoyongbo/output/multiOptimizeRank"
+
+
+  val structureMapRankOutputPath = "/user/go2data_rank/taoyongbo/output/structureMapRank"
+
   val gbkEncoding = "gb18030"
 
 

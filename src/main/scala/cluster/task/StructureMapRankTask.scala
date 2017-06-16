@@ -17,13 +17,12 @@ object StructureMapRankTask {
     System.setProperty("spark.sql.warehouse.dir", Constants.wareHouse)
     val ss = SparkSession.builder().getOrCreate()
     val sc = ss.sparkContext
-    val outputPath = "/user/go2data_rank/taoyongbo/output/StructureRankCompareRank"
-    val path = new Path(outputPath)
+    val path = new Path(Constants.structureMapRankOutputPath)
     WordUtils.delDir(sc, path, true)
 
     val poiRank: RDD[(String, String)] = WordUtils.convert(sc, Constants.rankCombineOutputPath, Constants
-      .gbkEncoding).map(x=>x.split('\t')).map(x => (x(1), Array(x(0),x(1),x(2),x(3),x(36)).mkString
-    ("\t"))).cache()    //dataid->name,id,city,category,tagscore,tag,weight,rank x(0),x(1),x(2),x(3),x(7),x(19),x(34),x(36)
+      .gbkEncoding).map(x => x.split('\t')).map(x => (x(1), Array(x(0), x(1), x(2), x(3), x(36)).mkString
+    ("\t"))).cache() //dataid->name,id,city,category,tagscore,tag,weight,rank x(0),x(1),x(2),x(3),x(7),x(19),x(34),x(36)
 
     val structureInfo = WordUtils.convert(sc, Constants.structureOutPutPath, Constants
       .gbkEncoding).map(x => x.split
@@ -31,7 +30,8 @@ object StructureMapRankTask {
 
     //cdataid->pdataid
     val childStructureInfo: RDD[(String, String)] = structureInfo.flatMap(x => x(11).split(",").map(y => (y, x(0))))
-    structureRank(poiRank,childStructureInfo).saveAsNewAPIHadoopFile(outputPath, classOf[Text], classOf[IntWritable], classOf[GBKFileOutputFormat[Text, IntWritable]])
+    structureRank(poiRank, childStructureInfo).saveAsNewAPIHadoopFile(Constants.structureMapRankOutputPath,
+      classOf[Text], classOf[IntWritable], classOf[GBKFileOutputFormat[Text, IntWritable]])
 
   }
 
@@ -64,12 +64,12 @@ object StructureMapRankTask {
       val parentCategory = parentInfo.split('\t')(3)
 
       val city = parentInfo.split('\t')(2)
-      if(childCategory.equals(parentCategory)){
-        (null, parentInfo+"^"+childInfo)
+      if (childCategory.equals(parentCategory)) {
+        (null, parentInfo + "^" + childInfo)
       }
       else (null, null)
 
-    }).filter(x=>StringUtils.isNoneBlank(x._2))
+    }).filter(x => StringUtils.isNoneBlank(x._2))
 
 
 
