@@ -29,7 +29,6 @@ object StructureTask {
     val structureService = new StructureInfoService
 
     val structuresInfo = structureService.StructureRDD(poiRdd, structureRdd).map(x => (null, x))
-    print(structuresInfo.count())
     structuresInfo.saveAsNewAPIHadoopFile(Constants.structureOutPutPath, classOf[Text], classOf[IntWritable], classOf[GBKFileOutputFormat[Text, IntWritable]])
     sc.stop()
 

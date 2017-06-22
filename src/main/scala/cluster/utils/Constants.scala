@@ -43,22 +43,23 @@ object Constants{
 
 
   //rank
-  val multiRankOutputPath = "/user/go2data_rank/taoyongbo/output/multiRank/"
+  val multiRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/multiRank/"
 
-  val allmultiRankOutputPath = "/user/go2data_rank/taoyongbo/output/multiRank/*/"
+  val allmultiRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/multiRank/*/"
 
-  val hotCountRankOutputPath = "/user/go2data_rank/taoyongbo/output/hotCountRank/"
-  val hitCountRankOutputPath = "/user/go2data_rank/taoyongbo/output/hitCountRank/"
-  val rankCombineOutputPath = "/user/go2data_rank/taoyongbo/output/rankCombine/"
-  val brandRankOutputPath = "/user/go2data_rank/taoyongbo/output/brandRank/"
-  val polygonRankOutputPath = "/user/go2data_rank/taoyongbo/output/polygonRank/"
+  val hotCountRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/hotCountRank/"
+  val hitCountRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/hitCountRank/"
+  val rankCombineOutputPath = "/user/go2data_rank/taoyongbo/output/rank/rankCombine/"
+  val brandRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/brandRank/"
+  val polygonRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/polygonRank/"
 
   val keyPath = "/user/go2data_rank/taoyongbo/output/key/"
 
   val multiOptimizeRankOutputPath = "/user/go2data_rank/taoyongbo/output/multiOptimizeRank"
 
 
-  val structureMapRankOutputPath = "/user/go2data_rank/taoyongbo/output/structureMapRank"
+  val structureMapRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/structureMapRank"
+  val structureOptimizeRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/structureOptimizeRank"
 
   val gbkEncoding = "gb18030"
 

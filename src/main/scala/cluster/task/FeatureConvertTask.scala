@@ -28,6 +28,10 @@ object FeatureConvertTask {
     val cityPath = new Path(Constants.cityFeatureValueOutputPath)
     WordUtils.delDir(sc, cityPath, true)
 
+
+    val structurePath = new Path(Constants.structureOutPutPath)
+    WordUtils.delDir(sc, structurePath, true)
+
     val matchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.matchCountInputPath, Constants.gbkEncoding)
     val searchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.searchCountInputPath, Constants.gbkEncoding)
     val poiHotCountRdd: RDD[String] = WordUtils.convert(sc, Constants.poiHotCountOutputPath, Constants.gbkEncoding)
@@ -37,7 +41,12 @@ object FeatureConvertTask {
 
     //结构化数据
     val structureInfoService = new StructureInfoService
-    val structureRdd = structureInfoService.StructureRDD(poiRdd, structureXmlRdd)
+    val structureRdd = structureInfoService.StructureRDD(poiRdd, structureXmlRdd).cache()
+
+    val structuresInfo = structureRdd.map(x => (null, x))
+    structuresInfo.saveAsNewAPIHadoopFile(Constants.structureOutPutPath, classOf[Text], classOf[IntWritable], classOf[GBKFileOutputFormat[Text, IntWritable]])
+
+
     val featureCombineRdd = FeatureCombineService.CombineRDD(sc, matchCountRdd, searchCountRdd, poiHotCountRdd,
       structureRdd, poiRdd)
 

@@ -18,8 +18,8 @@ class StructureRankOptimizeService extends RankOptimizeService{
   def rankOptimize(rankRdd: RDD[String], structureRankRdd: RDD[String]): RDD[String] = {
 
 
-    val rank = rankRdd.map(x => (x.split("\t")(1), x))
-    val structureRank = structureRankRdd.map(x=>x.split("\t")).map(x=>(x(0),x(5)))
+    val rank: RDD[(String, String)] = rankRdd.map(x => (x.split("\t")(1), x))
+    val structureRank: RDD[(String, String)] = structureRankRdd.map(x=>x.split("\t")).map(x=>(x(0),x(5)))
 
     val optimizeRankResult: RDD[String] = rank.leftOuterJoin(structureRank).map(x => {
 
@@ -33,7 +33,7 @@ class StructureRankOptimizeService extends RankOptimizeService{
       } else {
         val fields = rankInfo.split("\t")
         val fieldsLength = fields.length
-        val newLine = fields.slice(0, fieldsLength - 5).mkString("\t") + "\t" + structureOptimizeRank.get + "\t" +
+        newLine = fields.slice(0, fieldsLength - 5).mkString("\t") + "\t" + structureOptimizeRank.get + "\t" +
           fields.slice(fieldsLength - 4, fieldsLength).mkString("\t")
       }
       newLine

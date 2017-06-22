@@ -24,13 +24,13 @@ object RankOptimizeTask {
 
     val rankRdd = WordUtils.convert(sc, Constants.rankCombineOutputPath, Constants.gbkEncoding)
     val brandRankRdd = WordUtils.convert(sc, Constants.brandRankOutputPath, Constants.gbkEncoding)
-    val structureRankRdd = WordUtils.convert(sc, Constants.structureMapRankOutputPath, Constants.gbkEncoding)
+    val structureRankRdd = WordUtils.convert(sc, Constants.structureOptimizeRankOutputPath, Constants.gbkEncoding)
 
 
     val structureRankOptimize = new StructureRankOptimizeService
     val brandRankOptimize = new BrandRankOptimizeService
-    val structureRank = structureRankOptimize.rankOptimize(rankRdd, structureRankRdd)
-    val brandRank = brandRankOptimize.rankOptimize(structureRank, brandRankRdd)
+    val newRank = structureRankOptimize.rankOptimize(rankRdd, structureRankRdd)
+    val brandRank = brandRankOptimize.rankOptimize(newRank, brandRankRdd)
 
     val result = brandRank.map(x => (WordUtils
       .converterToSpell(x.split
