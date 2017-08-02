@@ -9,6 +9,8 @@ import org.apache.hadoop.io.{IntWritable, Text}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{HashPartitioner, SparkConf, SparkContext}
 
+import scala.collection.Map
+
 /**
   * Created by admin on 2016/10/10.
   */
@@ -32,7 +34,7 @@ object FeatureConvertTask {
     val structurePath = new Path(Constants.structureOutPutPath)
     WordUtils.delDir(sc, structurePath, true)
 
-    val matchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.matchCountInputPath, Constants.gbkEncoding)
+    val matchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.matchCountOutputPath, Constants.gbkEncoding)
     val searchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.searchCountInputPath, Constants.gbkEncoding)
     val poiHotCountRdd: RDD[String] = WordUtils.convert(sc, Constants.poiHotCountOutputPath, Constants.gbkEncoding)
     val structureXmlRdd: RDD[String] = WordUtils.convert(sc, Constants.structureInputPath, Constants.gbkEncoding)
@@ -52,14 +54,18 @@ object FeatureConvertTask {
 
 
     val featureThresholdRdd: RDD[String] = WordUtils.convert(sc, Constants.featureThresholdInputPath, Constants.gbkEncoding)
-    val featureValueRdd = FeatureConvertService.FeatureValueRDD(sc, featureCombineRdd, featureThresholdRdd).cache()
+    val featureValueRdd: RDD[String] = FeatureConvertService.FeatureValueRDD(sc, featureCombineRdd,
+      featureThresholdRdd)
 
 
     val cityFeatureValue: RDD[(String, String)] = featureValueRdd.map(x => (WordUtils.converterToSpell(x.split
     ("\t")(2)) + "-feature", x))
 
-    val featureValue: RDD[(String, String)] = featureValueRdd.map(x => (WordUtils.converterToSpell(x.split
-    ("\t")(2)) + "-" + WordUtils.converterToSpell(x.split("\t")(3)) + "-feature", x))
+//    val featureValue: RDD[(String, String)] = featureValueRdd.map(x => (WordUtils.converterToSpell(x.split
+//    ("\t")(2)) + "-" + WordUtils.converterToSpell(x.split("\t")(3)) + "-feature", x))
+
+    val featureValue: RDD[(String, String)] = featureValueRdd.map(x => (WordUtils.converterToSpell(x.split("\t")(3)) + "-feature", x))
+
 
     featureValue.partitionBy(new HashPartitioner(350)).persist().saveAsHadoopFile(Constants.featureValueOutputPath,
       classOf[Text],
@@ -72,6 +78,12 @@ object FeatureConvertTask {
       classOf[RDDMultipleTextOutputFormat])
     sc.stop()
   }
+
+
+
+
+
+
 
 
 }

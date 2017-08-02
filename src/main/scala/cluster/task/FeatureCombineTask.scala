@@ -19,7 +19,7 @@ object FeatureCombineTask {
 
     val path = new Path(Constants.featureCombineOutputPath)
     WordUtils.delDir(sc, path, true)
-    val matchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.matchCountInputPath, Constants.gbkEncoding)
+    val matchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.matchCountOutputPath, Constants.gbkEncoding)
     val searchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.searchCountInputPath, Constants.gbkEncoding)
     val poiHotCountRdd: RDD[String] = WordUtils.convert(sc, Constants.poiHotCountInputPath, Constants.gbkEncoding)
     val structureRdd: RDD[String] = WordUtils.convert(sc, Constants.structureOutPutPath, Constants.gbkEncoding)

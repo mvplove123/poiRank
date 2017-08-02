@@ -16,7 +16,7 @@ object Constants{
 
   val structureInputPath = "/user/go2data_rank/taoyongbo/input/nameStructure/"
   val searchCountInputPath = "/user/go2data_rank/taoyongbo/input/searchCount/"
-  val matchCountInputPath = "/user/go2data_rank/taoyongbo/input/matchCount/"
+  val newMatchCountOutputPath = "/user/go2data_rank/taoyongbo/output/newMatchCount/"
   val matchCountOutputPath = "/user/go2data_rank/taoyongbo/output/matchCount/"
 
   val poiHotCountInputPath = "/user/go2data_rank/taoyongbo/input/poiHotCount/"
@@ -286,6 +286,15 @@ object Constants{
     categoryBound += ("金融银行-ATM" -> 5)
     return categoryBound
   }
+
+  var specialPinyinMap = Map[String,String]()
+
+  specialPinyinMap+="抚州市"->"fuzhoushi0"
+  specialPinyinMap+="伊春市"->"yichunshi0"
+  specialPinyinMap+="榆林市"->"yulinshi0"
+  specialPinyinMap+="台州市"->"taizhoushi0"
+  specialPinyinMap+="宿州市"->"suzhoushi0"
+
 
   //    val cityList = Array("shanghaishi", "guangzhoushi", "wuhanshi", "hangzhoushi", "chengdoushi",
   //      "nanjingshi",

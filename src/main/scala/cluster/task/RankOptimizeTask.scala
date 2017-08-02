@@ -19,7 +19,18 @@ object RankOptimizeTask {
     val ss = SparkSession.builder().getOrCreate()
     val sc: SparkContext = ss.sparkContext
 
-    val path = new Path(Constants.multiOptimizeRankOutputPath)
+
+    if(args.length<2){
+      println(args.mkString("\t"))
+      println("no outputpath!")
+      sc.stop()
+    }
+
+    val multiOptimizeRankOutputPath = args(1)
+
+
+
+    val path = new Path(multiOptimizeRankOutputPath)
     WordUtils.delDir(sc, path, true)
 
     val rankRdd = WordUtils.convert(sc, Constants.rankCombineOutputPath, Constants.gbkEncoding)
@@ -36,7 +47,7 @@ object RankOptimizeTask {
       .converterToSpell(x.split
       ("\t")(2)) + "-rank", x))
 
-    result.partitionBy(new HashPartitioner(400)).saveAsHadoopFile(Constants.multiOptimizeRankOutputPath, classOf[Text],
+    result.partitionBy(new HashPartitioner(400)).saveAsHadoopFile(multiOptimizeRankOutputPath, classOf[Text],
       classOf[IntWritable],
       classOf[RDDMultipleTextOutputFormat])
 

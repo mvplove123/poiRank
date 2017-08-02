@@ -153,7 +153,7 @@ object FeatureConvertService {
     val hotCount: String = line(18)
     val hitCount: String = line(19)
     val viewCount: String = line(20)
-    val sumViewOrder: String = line(21)
+    val citySize: String = line(21)
     var categoryScore: String = "1"
     var keywordScore: String = "1"
     var matchCountScore: String = "1"
@@ -187,7 +187,7 @@ object FeatureConvertService {
       val result = (Array(name, dataId, city, parentCategory, subCategory, brand, categoryScore,
         keywordScore, matchCountScore, gradeScore, commentScore, priceScore, areaScore, leafCountScore, doorCountScore,
         parkCountScore, innerCountScore, buildCountScore, point, keyword, matchCount, grade, comment, price, area,
-        leafCount, doorCount, parkCount, innerCount, buildCount, hotCount, hitCount, viewCount, sumViewOrder).mkString
+        leafCount, doorCount, parkCount, innerCount, buildCount, hotCount, hitCount, viewCount, citySize).mkString
       ("\t"))
       return result
 

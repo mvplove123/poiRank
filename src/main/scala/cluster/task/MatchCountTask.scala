@@ -26,12 +26,12 @@ object MatchCountTask {
 //    conf.set("spark.kryo.registrator", "cluster.task.MyKryoRegistrator")
     val sc: SparkContext = new SparkContext(conf)
 
-    val path = new Path(Constants.matchCountOutputPath)
+    val path = new Path(Constants.newMatchCountOutputPath)
     WordUtils.delDir(sc, path, true)
     val poiRdd: RDD[String] = WordUtils.convert(sc, Constants.poiOutPutPath, Constants.gbkEncoding)
 
     val matchResult = MatchCountService.getMatchCountRDD(sc, poiRdd).map(x => (null, x))
-    matchResult.saveAsNewAPIHadoopFile(Constants.matchCountOutputPath, classOf[Text], classOf[IntWritable],
+    matchResult.saveAsNewAPIHadoopFile(Constants.newMatchCountOutputPath, classOf[Text], classOf[IntWritable],
       classOf[GBKFileOutputFormat[Text, IntWritable]])
     sc.stop()
 

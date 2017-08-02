@@ -82,6 +82,11 @@ object WordUtils {
     * @return 拼音
     */
   def converterToSpell(chines: String): String = {
+    if (Constants.specialPinyinMap.contains(chines)){
+      return Constants.specialPinyinMap(chines)
+    }
+
+
     var pinyinName: String = ""
     val nameChar: Array[Char] = chines.toCharArray
     val defaultFormat: HanyuPinyinOutputFormat = new HanyuPinyinOutputFormat
@@ -97,7 +102,7 @@ object WordUtils {
           var tmpName = PinyinHelper.toHanyuPinyinStringArray(nameChar(i), defaultFormat)(0)
 
           if (tmpName.contains("u:")) {
-            //fix  吕梁帄1�7
+            //fix  吕梁拼音
             val index = tmpName.indexOf("u:")
             var newName = tmpName.substring(0, index) + "v"
             pinyinName += newName

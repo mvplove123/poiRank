@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import scala.collection.Map
+
 /**
   * Created by admin on 2016/10/10.
   * 原始特征值合并
@@ -19,7 +21,7 @@ object FeatureCombineService {
     ).map(line => (line(1), "matchCount_" + line(6))) //dataid,matchCount
 
     val searchCount = searchCountRdd.map(line => line.split('\t')
-    ).map(line => (line(0), Array("searchCount_" + line(1), 0, 0).mkString("\t"))) //dataid,hitCount,
+    ).map(line => (line(0), Array("searchCount_" + line(1), 0).mkString("\t"))) //dataid,hitCount,
     // viewCount,sumViewOrder
 
     val hotCount = poiHotCountRdd.map(line => line.split('\t')
@@ -46,11 +48,24 @@ object FeatureCombineService {
     )
 
     val combineRdd: RDD[String] = combineFeatures.map(x => featureCombineInfo(x._2)).filter(x=>StringUtils.isNotBlank
-    (x))
+    (x)).cache()
 
-    return combineRdd
+
+    val newCombineRdd: RDD[String] = getCitySize(combineRdd)
+
+
+
+    return newCombineRdd
 
   }
+
+  def  getCitySize(featureValueRdd: RDD[String]): RDD[String]  ={
+    val citySizeMap: Map[String, Int] = featureValueRdd.map(x => (x.split("\t")(3), 1)).reduceByKey(_ + _)
+      .collectAsMap()
+    val newFeatureValueRdd: RDD[String] = featureValueRdd.map(x=>x+"\t"+citySizeMap(x.split("\t")(3)).toString)
+    return newFeatureValueRdd
+  }
+
 
 
   def featureCombineInfo(elem: List[String]): String = {
@@ -63,7 +78,7 @@ object FeatureCombineService {
     //热点人气数据
     var hotCountValue: String = "0"
     //点击量，搜索量
-    var searchCountValue: String = Array("0", "0", "0").mkString("\t")
+    var searchCountValue: String = Array("0", "0").mkString("\t")
 
     elem.foreach(y => {
       if (y.startsWith("matchCount_")) matchCountValue = y.substring(11)
