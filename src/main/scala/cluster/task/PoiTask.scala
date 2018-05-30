@@ -16,12 +16,21 @@ object PoiTask {
     val conf = new SparkConf()
     val sc: SparkContext = new SparkContext(conf)
 
-    val path = new Path(Constants.poiOutPutPath)
+    if(args.length<2){
+      println(args.mkString("\t"))
+      println("no outputpath!")
+      sc.stop()
+    }
+
+    val baseOutPutPath = args(1)
+
+
+    val path = new Path(baseOutPutPath+Constants.poiOutPutPath)
     WordUtils.delDir(sc, path, true)
 
-    val poi = PoiService.getPoiRDD(sc).map(x => (null, x))
+    val poi = PoiService.getPoiRDD(sc,baseOutPutPath).map(x => (null, x))
 
-    poi.saveAsNewAPIHadoopFile(Constants.poiOutPutPath, classOf[Text], classOf[IntWritable],
+    poi.saveAsNewAPIHadoopFile(baseOutPutPath+Constants.poiOutPutPath, classOf[Text], classOf[IntWritable],
       classOf[GBKFileOutputFormat[Text, IntWritable]])
 
     sc.stop()

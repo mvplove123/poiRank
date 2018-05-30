@@ -17,20 +17,31 @@ object StructureMapRankTask {
     System.setProperty("spark.sql.warehouse.dir", Constants.wareHouse)
     val ss = SparkSession.builder().getOrCreate()
     val sc = ss.sparkContext
-    val path = new Path(Constants.structureMapRankOutputPath)
+    if (args.length < 2) {
+      println(args.mkString("\t"))
+      println("no outputpath!")
+      sc.stop()
+    }
+
+    val rankOutputPath = args(1)
+
+
+
+    val path = new Path(rankOutputPath+Constants.structureMapRankOutputPath)
     WordUtils.delDir(sc, path, true)
 
-    val poiRank: RDD[(String, String)] = WordUtils.convert(sc, Constants.rankCombineOutputPath, Constants
+    val poiRank: RDD[(String, String)] = WordUtils.convert(sc, rankOutputPath+Constants.rankCombineOutputPath, Constants
       .gbkEncoding).map(x => x.split('\t')).map(x => (x(1), Array(x(0), x(1), x(2), x(3), x(36)).mkString
     ("\t"))).cache() //dataid->name,id,city,category,tagscore,tag,weight,rank x(0),x(1),x(2),x(3),x(7),x(19),x(34),x(36)
 
-    val structureInfo = WordUtils.convert(sc, Constants.structureOutPutPath, Constants
+    val structureInfo = WordUtils.convert(sc, rankOutputPath+Constants.structureOutPutPath, Constants
       .gbkEncoding).map(x => x.split
     ("\t")).filter(x => x.length == 12)
 
     //cdataid->pdataid
     val childStructureInfo: RDD[(String, String)] = structureInfo.flatMap(x => x(11).split(",").map(y => (y, x(0))))
-    structureRank(poiRank, childStructureInfo).saveAsNewAPIHadoopFile(Constants.structureMapRankOutputPath,
+    structureRank(poiRank, childStructureInfo).saveAsNewAPIHadoopFile(rankOutputPath+Constants
+      .structureMapRankOutputPath,
       classOf[Text], classOf[IntWritable], classOf[GBKFileOutputFormat[Text, IntWritable]])
 
   }

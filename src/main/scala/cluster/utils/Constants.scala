@@ -7,61 +7,85 @@ import scala.collection.mutable
   */
 object Constants{
 
+  val CTRIP = "CTRIP"
+  val DIANPING = "DIANPING"
+  val ZHUNA = "ZHUNA"
+  val TONGCHENG = "TONGCHENG"
+  val WUBA = "58"
+  val CTRIPSCENERY = "CTRIPSCENERY"
+
 
   val MultiRank = "multiRank"
   val SingleRank = "singleRank"
+  val gbkEncoding = "gb18030"
 
 
   val wareHouse = "/user/go2data_rank/taoyongbo/output/warehouse/"
+  val featureThresholdInputPath = "/config/poi-threshold.txt"
+  val weightInputPath = "/config/poiWeight.txt"
+  val citySizeInputPath = "taoyongbo/rank/config/citysize.txt"
+  val hitCountInputPath = "taoyongbo/rank/default/hitCount/"
+  val newMatchCountOutputPath = "taoyongbo/rank/default/newMatchCount/"
+  val matchCountOutputPath = "taoyongbo/rank/default/matchCount/"
 
-  val structureInputPath = "/user/go2data_rank/taoyongbo/input/nameStructure/"
-  val searchCountInputPath = "/user/go2data_rank/taoyongbo/input/searchCount/"
-  val newMatchCountOutputPath = "/user/go2data_rank/taoyongbo/output/newMatchCount/"
-  val matchCountOutputPath = "/user/go2data_rank/taoyongbo/output/matchCount/"
-
-  val poiHotCountInputPath = "/user/go2data_rank/taoyongbo/input/poiHotCount/"
-  val gpsCountInputPath = "/user/go2data_rank/taoyongbo/input/gps/"
-  val featureThresholdInputPath = "/user/go2data_rank/taoyongbo/input/featureThreshold/"
-  val weightInputPath = "/user/go2data_rank/taoyongbo/input/poiWeight/"
-
-  val poiXmlInputPath = "/user/go2data_rank/taoyongbo/input/poiXml1/"
-  val busXmlPoiPath = "/user/go2data_rank/taoyongbo/input/poiXml2/"
-  val poiXmlMyselfPath = "/user/go2data_rank/taoyongbo/input/poiXml3/"
-  val polygonXmlPath = "/user/go2data_rank/taoyongbo/input/polygonXml/"
+  val poiHotCountInputPath = "/poiHotCount/"
+  val gpsCountInputPath = "/gps/"
+  val structureInputPath = "/nameStructure/"
 
 
-  val poiOutPutPath = "/user/go2data_rank/taoyongbo/output/poi/"
-  val structureOutPutPath = "/user/go2data_rank/taoyongbo/output/structureInfo/"
-  val featureCombineOutputPath = "/user/go2data_rank/taoyongbo/output/featureCombine/"
-  val featureValueOutputPath = "/user/go2data_rank/taoyongbo/output/featureValue/"
+  val poiXmlInputPath = "/poiXml1/"
+  val busXmlPoiPath = "/poiXml2/"
+  val poiXmlMyselfPath = "/poiXml3/"
+  val polygonXmlPath = "/polygonXml/"
 
 
-  val cityFeatureValueOutputPath = "/user/go2data_rank/taoyongbo/output/cityFeatureValue/"
+  val poiOutPutPath = "/poi/"
+  val structureOutPutPath = "/structureInfo/"
+  val featureCombineOutputPath = "/featureCombine/"
+  val featureValueOutputPath = "/featureValue/"
+  val cityFeatureValueOutputPath = "/cityFeatureValue/"
+  val brandFeatureOutputPath = "/brandFeatureValue/"
 
 
-  val poiHotCountOutputPath = "/user/go2data_rank/taoyongbo/output/poiHotCount/"
+  val poiHotCountOutputPath = "/poiHotCount/"
 
 
   //rank
-  val multiRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/multiRank/"
+  val multiRankOutputPath = "/multiRank/"
 
   val allmultiRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/multiRank/*/"
 
-  val hotCountRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/hotCountRank/"
-  val hitCountRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/hitCountRank/"
-  val rankCombineOutputPath = "/user/go2data_rank/taoyongbo/output/rank/rankCombine/"
-  val brandRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/brandRank/"
-  val polygonRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/polygonRank/"
+  val hotCountRankOutputPath = "/hotCountRank/"
+  val hitCountRankOutputPath = "/hitCountRank/"
+  val rankCombineOutputPath = "/rankCombine/"
+  val brandRankOutputPath = "/brandRank/"
+  val polygonRankOutputPath = "/polygonRank/"
 
   val keyPath = "/user/go2data_rank/taoyongbo/output/key/"
 
-  val multiOptimizeRankOutputPath = "/user/go2data_rank/taoyongbo/output/multiOptimizeRank"
+  val multiOptimizeRankOutputPath = "/multiOptimizeRank"
 
 
-  val structureMapRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/structureMapRank"
-  val structureOptimizeRankOutputPath = "/user/go2data_rank/taoyongbo/output/rank/structureOptimizeRank"
+  val structureMapRankOutputPath = "/structureMapRank"
+  val structureOptimizeRankOutputPath = "/structureOptimizeRank"
 
-  val gbkEncoding = "gb18030"
+  val multiRank = "/rank/multiRank/"
+  val hotCountRank = "/rank/hotCountRank/"
+  val rankCombine = "/rank/rankCombine/"
+  val brandRank = "/rank/brandRank/"
+  val multiOptimizeRank = "/output/multiOptimizeRank/"
+  val structureMapRank = "/rank/structureMapRank/"
+  val structureOptimizeRank = "/rank/structureOptimizeRank/"
+
+
+  //frank
+  val filterPoiInputPath = "/filterPoi/"
+  val filterRankPath = "/FRank/"
+  val poiboundPath = "/gpsCustomStatistic/"
+  val similarQueryCountPath = "/similarQueryCount/"
+  val vrViewCountPath = "taoyongbo/input/filterRank/vrViewCount/"
+  val vrHitCountPath = "taoyongbo/input/filterRank/vrHitCount/"
+  val sogouViewCount = "taoyongbo/input/filterRank/sogouViewCount/"
 
 
   /**
@@ -294,75 +318,6 @@ object Constants{
   specialPinyinMap+="榆林市"->"yulinshi0"
   specialPinyinMap+="台州市"->"taizhoushi0"
   specialPinyinMap+="宿州市"->"suzhoushi0"
-
-
-  //    val cityList = Array("shanghaishi", "guangzhoushi", "wuhanshi", "hangzhoushi", "chengdoushi",
-  //      "nanjingshi",
-  //      "tianjinshi",
-  //      "suzhoushi", "beijingshi", "shenzhenshi",
-  //      "baiyinshi", "shangqiushi", "shangluoshi", "songyuanshi", "sipingshi", "baichengshi", "baishanshi",
-  //      "hetiandiqu", "quzhoushi", "zhongqingshi", "zhongweishi", "zhengzhoushi", "zhenjiangshi",
-  //      "zhaoqingshi", "zhaotongshi", "zhangyeshi", "zhangzhoushi", "zaozhuangshi", "yunchengshi",
-  //      "huangshishi", "zhuzhoushi", "zhuhaishi", "zhoushanshi", "zhoukoushi", "zhanjiangshi",
-  //      "tangshanshi", "xiantaoshi", "shamenshi", "xianshi", "changjihuizuzizhizhou", "baishalizuzizhixian",
-  //      "penghuxian", "chuxiongyizuzizhizhou", "changjianglizuzizhixian", "xinzhuxian", "taoyuanxian",
-  //      "taibeishi", "nantouxian", "tainanshi", "xuanchengshi", "xuchangshi", "xuzhoushi", "xingtaishi",
-  //      "xinyangshi", "xinzhoushi", "xinyushi", "xinxiangshi", "xiaoganshi", "chenzhoushi", "xiangtanshi",
-  //      "xiangyangshi", "xianyangshi", "xianningshi", "chaozhoushi", "shannandiqu", "sanmenxiashi",
-  //      "guyuanshi", "rikazeshi", "qinhuangdaoshi", "qitaiheshi", "pingdingshanshi", "panzhihuashi",
-  //      "neiqudiqu", "mudanjiangshi", "guilinshi", "guanganshi", "ganzhoushi", "fuyangshi", "fuxinshi",
-  //      "fuzhoushi1", "fushunshi", "fuzhoushi", "foshanshi", "dongguanshi", "maanshanshi", "liupanshuishi",
-  //      "bazhongshi", "anyangshi", "anqingshi", "ankangshi", "anshanshi", "dezhoushi", "dongyingshi",
-  //      "dongfangshi", "dinganxian", "zhongshanshi", "meishanshi", "meizhoushi", "maomingshi", "lvliangshi",
-  //      "loudishi", "longnanshi", "longyanshi", "liuanshi", "wuzhoushi", "chaoyangshi", "gaoxiongshi",
-  //      "tainanxian", "gaoxiongxian", "taidongxian", "yilanxian", "jiayixian", "pingdongxian", "jilongshi",
-  //      "zhanghuaxian", "liuzhoushi", "linyishi", "lingaoxian", "lincangshi", "liaoyuanshi", "liaochengshi",
-  //      "lishuishi", "lijiangshi", "leshanshi", "langfangshi", "wuweishi", "wuzhongshi", "tonghuashi",
-  //      "tielingshi", "taizhongshi", "wulanchabushi", "tulufandiqu", "tumushukeshi", "shennongjialinqu",
-  //      "qiqihaershi", "aomentebiexingzhengqu", "wuhushi", "wuhaishi", "wenchangshi", "wenzhoushi",
-  //      "weinanshi", "weifangshi", "weihaishi", "tunchangxian", "tongrenshi", "tonglingshi", "tongchuanshi",
-  //      "tianshuishi", "tianmenshi", "xilinguolemeng", "wulumuqishi", "kelamayishi", "hulunbeiershi",
-  //      "huhehaoteshi", "chifengshi", "kezilesukeerkezizizhizhou", "bangbushi", "diqingzangzuzizhizhou",
-  //      "nujianglisuzuzizhizhou", "ganzizangzuzizhizhou", "daxinganlingdiqu", "miaosuxian", "yunlinxian",
-  //      "nanchongshi", "nanchangshi", "deyangshi", "dandongshi", "datongshi", "daqingshi", "dazhoushi",
-  //      "eerduosishi", "wuzhishanshi", "yichunshi1", "xiningshi", "chuzhoushi", "chongzuoshi", "chizhoushi",
-  //      "chengdeshi", "dalibaizuzizhizhou", "dehongdaizujingpozuzizhizhou", "xishuangbannadaizuzizhizhou",
-  //      "wenshanzhuangzumiaozuzizhizhou", "qiongzhonglizumiaozuzizhixian", "boertalamengguzizhizhou",
-  //      "huangshanshi", "huanggangshi", "huainanshi", "huaibeishi", "huaianshi", "huzhoushi", "hengyangshi",
-  //      "hengshuishi", "hebishi", "heyuanshi", "hechishi", "qionghaishi", "hefeishi", "hanzhongshi",
-  //      "handanshi", "haikoushi", "haidongshi", "guiyangshi", "guigangshi", "quanzhoushi", "qujingshi",
-  //      "qingyangshi", "qingyuanshi", "qingdaoshi", "qinzhoushi", "puershi", "pingliangshi", "pingxiangshi",
-  //      "panjinshi", "dingxishi", "dalianshi", "chengmaixian", "bijieshi", "yushuzangzuzizhizhou",
-  //      "xianggangtebiexingzhengqu", "lingshuilizuzizhixian", "linxiahuizuzizhizhou",
-  //      "liangshanyizuzizhizhou", "ledonglizuzizhixian", "huangnanzangzuzizhizhou", "hainanzangzuzizhizhou",
-  //      "haibeizangzuzizhizhou", "guoluozangzuzizhizhou", "fangchenggangshi", "yibinshi", "wanningshi",
-  //      "jinhuashi", "huizhoushi", "huaihuashi", "hezeshi", "guangyuanshi", "ezhoushi", "shanweishi",
-  //      "ningdeshi", "ningboshi", "nanyangshi", "nantongshi", "nanpingshi", "nanningshi", "shantoushi",
-  //      "sanyashi", "sanshashi", "rizhaoshi", "kashendiqu", "yichangshi", "yichunshi", "yangjiangshi",
-  //      "yangzhoushi", "yananshi", "yanchengshi", "yantaishi", "yaanshi", "baotinglizumiaozuzizhixian",
-  //      "bayinguolengmengguzizhizhou", "abazangzuqiangzuzizhizhou", "yilihasakezizhizhou",
-  //      "yanbianchaoxianzuzizhizhou", "putianshi", "luoyangshi", "suizhoushi", "yiyangshi", "yangquanshi",
-  //      "xinganmeng", "wuxishi", "tongliaoshi", "suiningshi", "shaoguanshi", "sanmingshi", "liaoyangshi",
-  //      "laiwushi", "qianjiangshi", "linfenshi", "heiheshi", "zhangshashi", "anshunshi", "yingkoushi",
-  //      "jiangmenshi", "yunfushi", "yueyangshi", "yuxishi", "yulinshi1", "yulinshi", "yongzhoushi",
-  //      "yingtanshi", "yinchuanshi", "jiuquanshi", "hualianxian", "taizhongxian", "hezhoushi", "hegangshi",
-  //      "jiamusishi", "jiayuguanshi", "huludaoshi", "hamidiqu", "haerbinshi", "changdoudiqu", "luoheshi",
-  //      "luzhoushi", "alidiqu", "alashanmeng", "alaershi", "puyangshi", "bozhoushi", "danzhoushi",
-  //      "zunyishi", "zigongshi", "ziboshi", "ziyangshi", "lanzhoushi", "laibinshi", "lasashi", "kunmingshi",
-  //      "kaifengshi", "linzhidiqu", "lianyungangshi", "jingdezhenshi", "gannanzangzuzizhizhou",
-  //      "zhangzhishi", "zhangchunshi", "changzhoushi", "changdeshi", "cangzhoushi", "binzhoushi",
-  //      "benxishi", "beihaishi", "baojishi", "baoshanshi", "baodingshi", "baotoushi", "bayannaoershi",
-  //      "aletaidiqu", "akesudiqu", "zhumadianshi", "zhangjiakoushi", "zhangjiajieshi", "wujiaqushi",
-  //      "tachengdiqu", "shuangyashanshi", "neijiangshi", "mianyangshi", "jiujiangshi", "jingzhoushi",
-  //      "jingmenshi", "jinzhongshi", "jinchengshi", "jinzhoushi", "jinchangshi", "jieyangshi", "jiaozuoshi",
-  //      "jiaxingshi", "jiyuanshi", "jiningshi", "jinanshi", "jilinshi", "jianshi", "jixishi",
-  //      "shizuishanshi", "shijiazhuangshi", "shihezishi", "taiyuanshi", "taizhoushi", "taianshi",
-  //      "taizhoushi1", "suihuashi", "suzhoushi1", "suqianshi", "shuozhoushi", "shiyanshi", "shenyangshi",
-  //      "shaoxingshi", "shaoyangshi", "shangraoshi", "qianxinanbuyizumiaozuzizhizhou",
-  //      "xiangxitujiazumiaozuzizhizhou", "qiannanbuyizumiaozuzizhizhou", "qiandongnanmiaozudongzuzizhizhou",
-  //      "honghehanizuyizuzizhizhou", "haiximengguzuzangzuzizhizhou", "enshitujiazumiaozuzizhizhou",
-  //      "baiseshi")
-
 
   val cityList = Array("shanghaishi", "guangzhoushi", "wuhanshi", "hangzhoushi", "chengdoushi",
     "nanjingshi", "beijingshi", "shenzhenshi")

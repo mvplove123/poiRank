@@ -24,15 +24,23 @@ object GpsPopularityTask {
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.registerKryoClasses(Array(classOf[CellCut]))
     val sc: SparkContext = new SparkContext(conf)
+    if (args.length < 2) {
+      println(args.mkString("\t"))
+      println("no outputpath!")
+      sc.stop()
+    }
 
+    val baseOutPutPath = args(1)
 
-    val path = new Path(Constants.poiHotCountOutputPath)
+    val path = new Path(baseOutPutPath+Constants.poiHotCountOutputPath)
     WordUtils.delDir(sc,path,true)
 
-    val poiRdd: RDD[String] = WordUtils.convert(sc, Constants.poiOutPutPath, Constants.gbkEncoding).cache()
-    val structureRdd: RDD[String] = WordUtils.convert(sc, Constants.structureInputPath, Constants.gbkEncoding)
-    val polygonRdd: RDD[String] = WordUtils.convert(sc, Constants.polygonXmlPath, Constants.gbkEncoding)
-    val gpsRdd: RDD[String] = WordUtils.convert(sc, Constants.gpsCountInputPath, Constants.gbkEncoding)
+    val poiRdd: RDD[String] = WordUtils.convert(sc, baseOutPutPath+Constants.poiOutPutPath, Constants.gbkEncoding)
+      .cache()
+    val structureRdd: RDD[String] = WordUtils.convert(sc, baseOutPutPath+Constants.structureInputPath, Constants
+      .gbkEncoding)
+    val polygonRdd: RDD[String] = WordUtils.convert(sc, baseOutPutPath+Constants.polygonXmlPath, Constants.gbkEncoding)
+    val gpsRdd: RDD[String] = WordUtils.convert(sc, baseOutPutPath+Constants.gpsCountInputPath, Constants.gbkEncoding)
     val gpsPopularityService = new GpsPopularityService
 
     val gpsPopularity = gpsPopularityService.gpsPopularity(sc,poiRdd,structureRdd,polygonRdd,gpsRdd)
@@ -41,7 +49,8 @@ object GpsPopularityTask {
 
 //    val gpsPopularity = gpsPopularityService.gpsPopularity1(sc,boundRdd,gpsRdd)
 
-    gpsPopularity.saveAsNewAPIHadoopFile(Constants.poiHotCountOutputPath, classOf[Text], classOf[IntWritable],
+    gpsPopularity.saveAsNewAPIHadoopFile(baseOutPutPath+Constants.poiHotCountOutputPath, classOf[Text],
+      classOf[IntWritable],
       classOf[GBKFileOutputFormat[Text, IntWritable]])
 
 

@@ -1,5 +1,6 @@
 # maven ignore
-target/
+*.xml
+#target/
 
 # eclipse ignore
 .settings/

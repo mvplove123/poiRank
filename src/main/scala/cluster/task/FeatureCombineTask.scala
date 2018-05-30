@@ -20,17 +20,16 @@ object FeatureCombineTask {
     val path = new Path(Constants.featureCombineOutputPath)
     WordUtils.delDir(sc, path, true)
     val matchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.matchCountOutputPath, Constants.gbkEncoding)
-    val searchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.searchCountInputPath, Constants.gbkEncoding)
+    val searchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.hitCountInputPath, Constants.gbkEncoding)
     val poiHotCountRdd: RDD[String] = WordUtils.convert(sc, Constants.poiHotCountInputPath, Constants.gbkEncoding)
     val structureRdd: RDD[String] = WordUtils.convert(sc, Constants.structureOutPutPath, Constants.gbkEncoding)
     val poiRdd: RDD[String] = WordUtils.convert(sc, Constants.poiOutPutPath, Constants.gbkEncoding)
 
-    //    val poiRdd: RDD[String] = PoiService.getPoiRDD(sc)
-
+    val citySizeRdd: RDD[String] = WordUtils.convert(sc, Constants.citySizeInputPath, Constants.gbkEncoding)
 
     val featureCombine = FeatureCombineService.CombineRDD(sc, matchCountRdd, searchCountRdd, poiHotCountRdd,
       structureRdd,
-      poiRdd).map(x => (null, x))
+      poiRdd, citySizeRdd).map(x => (null, x))
     featureCombine.saveAsNewAPIHadoopFile(Constants.featureCombineOutputPath, classOf[Text], classOf[IntWritable],
       classOf[GBKFileOutputFormat[Text, IntWritable]])
     sc.stop()

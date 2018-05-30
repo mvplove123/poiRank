@@ -14,9 +14,10 @@ object BrandRankService {
   def brandRankRDD(multiRank: RDD[String]): RDD[String] = {
 
 
-    val brandMap: RDD[(String, List[String])] = multiRank.map(x => x.split('\t'))
-      .filter(x => StringUtils.isNotBlank(x(5)))
-      .map(x => (x(5), x.mkString("\t")))
+    val brandMap = multiRank.map(x => x.split('\t')).filter(x => StringUtils.isNotBlank(x(5))).flatMap(x=>{
+      val value = x.mkString("\t")
+       x(5).split(",").map(x=>(x,value))
+    })
       .combineByKey(
         (v: String) => List(v),
         (c: List[String], v: String) => v :: c,

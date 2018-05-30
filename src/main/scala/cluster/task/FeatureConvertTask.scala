@@ -7,6 +7,7 @@ import cluster.utils.{RDDMultipleTextOutputFormat, Constants, GBKFileOutputForma
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{IntWritable, Text}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{HashPartitioner, SparkConf, SparkContext}
 
 import scala.collection.Map
@@ -24,36 +25,51 @@ object FeatureConvertTask {
     conf.registerKryoClasses(Array(classOf[FeatureValue], classOf[Threshold]))
     val sc: SparkContext = new SparkContext(conf)
 
-    val path = new Path(Constants.featureValueOutputPath)
+    if(args.length<2){
+      println(args.mkString("\t"))
+      println("no outputpath!")
+      sc.stop()
+    }
+
+    val baseOutPutPath = args(1)
+
+
+    val path = new Path(baseOutPutPath+Constants.featureValueOutputPath)
     WordUtils.delDir(sc, path, true)
 
-    val cityPath = new Path(Constants.cityFeatureValueOutputPath)
+    val cityPath = new Path(baseOutPutPath+Constants.cityFeatureValueOutputPath)
     WordUtils.delDir(sc, cityPath, true)
 
 
-    val structurePath = new Path(Constants.structureOutPutPath)
+    val structurePath = new Path(baseOutPutPath+Constants.structureOutPutPath)
     WordUtils.delDir(sc, structurePath, true)
 
     val matchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.matchCountOutputPath, Constants.gbkEncoding)
-    val searchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.searchCountInputPath, Constants.gbkEncoding)
-    val poiHotCountRdd: RDD[String] = WordUtils.convert(sc, Constants.poiHotCountOutputPath, Constants.gbkEncoding)
-    val structureXmlRdd: RDD[String] = WordUtils.convert(sc, Constants.structureInputPath, Constants.gbkEncoding)
-    val poiRdd: RDD[String] = WordUtils.convert(sc, Constants.poiOutPutPath, Constants.gbkEncoding).cache()
+    val searchCountRdd: RDD[String] = WordUtils.convert(sc, Constants.hitCountInputPath, Constants.gbkEncoding)
+    val poiHotCountRdd: RDD[String] = WordUtils.convert(sc, baseOutPutPath+Constants.poiHotCountOutputPath, Constants
+      .gbkEncoding)
+    val structureXmlRdd: RDD[String] = WordUtils.convert(sc, baseOutPutPath+Constants.structureInputPath, Constants
+      .gbkEncoding)
+    val poiRdd: RDD[String] = WordUtils.convert(sc, baseOutPutPath+Constants.poiOutPutPath, Constants.gbkEncoding)
+      .persist(StorageLevel.MEMORY_AND_DISK_SER)
+    val citySizeRdd: RDD[String] = WordUtils.convert(sc, Constants.citySizeInputPath, Constants.gbkEncoding)
 
 
     //结构化数据
     val structureInfoService = new StructureInfoService
-    val structureRdd = structureInfoService.StructureRDD(poiRdd, structureXmlRdd).cache()
+    val structureRdd = structureInfoService.StructureRDD(poiRdd, structureXmlRdd).persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     val structuresInfo = structureRdd.map(x => (null, x))
-    structuresInfo.saveAsNewAPIHadoopFile(Constants.structureOutPutPath, classOf[Text], classOf[IntWritable], classOf[GBKFileOutputFormat[Text, IntWritable]])
+    structuresInfo.saveAsNewAPIHadoopFile(baseOutPutPath+Constants.structureOutPutPath, classOf[Text],
+      classOf[IntWritable], classOf[GBKFileOutputFormat[Text, IntWritable]])
 
 
     val featureCombineRdd = FeatureCombineService.CombineRDD(sc, matchCountRdd, searchCountRdd, poiHotCountRdd,
-      structureRdd, poiRdd)
+      structureRdd, poiRdd,citySizeRdd)
 
 
-    val featureThresholdRdd: RDD[String] = WordUtils.convert(sc, Constants.featureThresholdInputPath, Constants.gbkEncoding)
+    val featureThresholdRdd: RDD[String] = WordUtils.convert(sc,baseOutPutPath+Constants.featureThresholdInputPath,
+      Constants.gbkEncoding)
     val featureValueRdd: RDD[String] = FeatureConvertService.FeatureValueRDD(sc, featureCombineRdd,
       featureThresholdRdd)
 
@@ -61,18 +77,17 @@ object FeatureConvertTask {
     val cityFeatureValue: RDD[(String, String)] = featureValueRdd.map(x => (WordUtils.converterToSpell(x.split
     ("\t")(2)) + "-feature", x))
 
-//    val featureValue: RDD[(String, String)] = featureValueRdd.map(x => (WordUtils.converterToSpell(x.split
-//    ("\t")(2)) + "-" + WordUtils.converterToSpell(x.split("\t")(3)) + "-feature", x))
-
     val featureValue: RDD[(String, String)] = featureValueRdd.map(x => (WordUtils.converterToSpell(x.split("\t")(3)) + "-feature", x))
 
 
-    featureValue.partitionBy(new HashPartitioner(350)).persist().saveAsHadoopFile(Constants.featureValueOutputPath,
+    featureValue.partitionBy(new HashPartitioner(350)).persist().saveAsHadoopFile(baseOutPutPath+Constants
+      .featureValueOutputPath,
       classOf[Text],
       classOf[IntWritable],
       classOf[RDDMultipleTextOutputFormat])
 
-    cityFeatureValue.partitionBy(new HashPartitioner(350)).persist().saveAsHadoopFile(Constants.cityFeatureValueOutputPath,
+    cityFeatureValue.partitionBy(new HashPartitioner(350)).persist().saveAsHadoopFile(baseOutPutPath+Constants
+      .cityFeatureValueOutputPath,
       classOf[Text],
       classOf[IntWritable],
       classOf[RDDMultipleTextOutputFormat])

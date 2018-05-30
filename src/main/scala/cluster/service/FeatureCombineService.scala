@@ -14,7 +14,7 @@ object FeatureCombineService {
 
 
   def CombineRDD(sc: SparkContext, matchCountRdd: RDD[String], searchCountRdd: RDD[String], poiHotCountRdd: RDD[String],
-                 structureRdd: RDD[String], poiRdd: RDD[String]): RDD[String] = {
+                 structureRdd: RDD[String], poiRdd: RDD[String],citySizeRdd:RDD[String]): RDD[String] = {
 
 
     val matchCount = matchCountRdd.map(line => line.split('\t')
@@ -51,7 +51,7 @@ object FeatureCombineService {
     (x)).cache()
 
 
-    val newCombineRdd: RDD[String] = getCitySize(combineRdd)
+    val newCombineRdd: RDD[String] = getCitySize(combineRdd,citySizeRdd)
 
 
 
@@ -59,10 +59,25 @@ object FeatureCombineService {
 
   }
 
-  def  getCitySize(featureValueRdd: RDD[String]): RDD[String]  ={
-    val citySizeMap: Map[String, Int] = featureValueRdd.map(x => (x.split("\t")(3), 1)).reduceByKey(_ + _)
+  def  getCitySize(featureValueRdd: RDD[String],citySizeRdd:RDD[String]): RDD[String]  ={
+    val citySizeMap: Map[String, String] = citySizeRdd.map(x => (x.split("\t"))).map(x=>(x(0),x(1))).collectAsMap()
+
+    val currentComputeCitySizeMap: Map[String, Int] = featureValueRdd.map(x => (x.split("\t")(3), 1)).reduceByKey(_ + _)
       .collectAsMap()
-    val newFeatureValueRdd: RDD[String] = featureValueRdd.map(x=>x+"\t"+citySizeMap(x.split("\t")(3)).toString)
+    val newFeatureValueRdd: RDD[String] = featureValueRdd.map(x=>{
+
+      val cityKey = x.split("\t")(3)
+
+      if (citySizeMap.contains(cityKey)){
+        x+"\t"+citySizeMap(cityKey).toString
+      }else{
+        x+"\t"+currentComputeCitySizeMap(cityKey).toString
+
+      }
+
+
+
+    })
     return newFeatureValueRdd
   }
 

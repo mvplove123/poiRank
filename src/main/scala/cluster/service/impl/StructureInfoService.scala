@@ -21,6 +21,7 @@ class StructureInfoService extends StructureService {
     val guidParent: RDD[(String, List[String])] = mapParentInfo(poi, guidparentChildrenInfo)
     val structuresInfoRdd: RDD[String] = guidParent.map(x => structureInfo(x._2))
 
+
     return structuresInfoRdd
   }
 

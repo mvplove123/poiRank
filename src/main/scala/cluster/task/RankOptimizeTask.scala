@@ -26,16 +26,17 @@ object RankOptimizeTask {
       sc.stop()
     }
 
-    val multiOptimizeRankOutputPath = args(1)
+    val rankOutputPath = args(1)
 
 
 
-    val path = new Path(multiOptimizeRankOutputPath)
+    val path = new Path(rankOutputPath+Constants.multiOptimizeRankOutputPath)
     WordUtils.delDir(sc, path, true)
 
-    val rankRdd = WordUtils.convert(sc, Constants.rankCombineOutputPath, Constants.gbkEncoding)
-    val brandRankRdd = WordUtils.convert(sc, Constants.brandRankOutputPath, Constants.gbkEncoding)
-    val structureRankRdd = WordUtils.convert(sc, Constants.structureOptimizeRankOutputPath, Constants.gbkEncoding)
+    val rankRdd = WordUtils.convert(sc,rankOutputPath+ Constants.rankCombineOutputPath, Constants.gbkEncoding)
+    val brandRankRdd = WordUtils.convert(sc, rankOutputPath+Constants.brandRankOutputPath, Constants.gbkEncoding)
+    val structureRankRdd = WordUtils.convert(sc, rankOutputPath+Constants.structureOptimizeRankOutputPath, Constants
+      .gbkEncoding)
 
 
     val structureRankOptimize = new StructureRankOptimizeService
@@ -47,7 +48,7 @@ object RankOptimizeTask {
       .converterToSpell(x.split
       ("\t")(2)) + "-rank", x))
 
-    result.partitionBy(new HashPartitioner(400)).saveAsHadoopFile(multiOptimizeRankOutputPath, classOf[Text],
+    result.partitionBy(new HashPartitioner(400)).saveAsHadoopFile(rankOutputPath+Constants.multiOptimizeRankOutputPath, classOf[Text],
       classOf[IntWritable],
       classOf[RDDMultipleTextOutputFormat])
 

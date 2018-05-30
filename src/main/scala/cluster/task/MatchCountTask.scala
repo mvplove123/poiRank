@@ -15,23 +15,32 @@ import org.apache.spark.{SparkConf, SparkContext}
   */
 
 
-
 object MatchCountTask {
 
   def main(args: Array[String]) {
 
 
     val conf = new SparkConf()
-//    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-//    conf.set("spark.kryo.registrator", "cluster.task.MyKryoRegistrator")
+    //    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+    //    conf.set("spark.kryo.registrator", "cluster.task.MyKryoRegistrator")
     val sc: SparkContext = new SparkContext(conf)
+    if (args.length < 2) {
+      println(args.mkString("\t"))
+      println("no outputpath!")
+      sc.stop()
+    }
 
-    val path = new Path(Constants.newMatchCountOutputPath)
+    val baseOutPutPath = args(1)
+
+
+
+    val path = new Path(baseOutPutPath + Constants.newMatchCountOutputPath)
     WordUtils.delDir(sc, path, true)
-    val poiRdd: RDD[String] = WordUtils.convert(sc, Constants.poiOutPutPath, Constants.gbkEncoding)
+    val poiRdd: RDD[String] = WordUtils.convert(sc, baseOutPutPath + Constants.poiOutPutPath, Constants.gbkEncoding)
 
     val matchResult = MatchCountService.getMatchCountRDD(sc, poiRdd).map(x => (null, x))
-    matchResult.saveAsNewAPIHadoopFile(Constants.newMatchCountOutputPath, classOf[Text], classOf[IntWritable],
+    matchResult.saveAsNewAPIHadoopFile(baseOutPutPath + Constants.newMatchCountOutputPath, classOf[Text],
+      classOf[IntWritable],
       classOf[GBKFileOutputFormat[Text, IntWritable]])
     sc.stop()
 

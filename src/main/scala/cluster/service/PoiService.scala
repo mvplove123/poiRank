@@ -1,7 +1,9 @@
 package cluster.service
 
+import java.text.DecimalFormat
 import java.util.regex.{Matcher, Pattern}
 
+import breeze.linalg.min
 import cluster.model.Poi
 import cluster.utils.{Constants, WordUtils}
 import org.apache.commons.lang3.StringUtils
@@ -9,22 +11,24 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.xml.sax.SAXParseException
 
-import scala.xml.{Elem, Node, XML}
+import scala.collection.mutable
+import scala.reflect.internal.util.Collections
+import scala.xml.{NodeSeq, Elem, Node, XML}
 
 /**
   * Created by admin on 2016/9/10.
   */
 object PoiService {
 
-  def getPoiRDD(sc: SparkContext): RDD[String] = {
+  def getPoiRDD(sc: SparkContext, baseOutPutPath: String): RDD[String] = {
 
-    val poiNochange: RDD[String] = PoiService.getPoiString(WordUtils.convert(sc, Constants.poiXmlInputPath, Constants.gbkEncoding))
+    val poiNochange: RDD[String] = PoiService.getPoiString(WordUtils.convert(sc, baseOutPutPath + Constants
+      .poiXmlInputPath, Constants.gbkEncoding))
 
-    val poiBus: RDD[String] = getPoiString(WordUtils.convert(sc, Constants.busXmlPoiPath, Constants.gbkEncoding))
+    val poiMyself: RDD[String] = getPoiString(WordUtils.convert(sc, baseOutPutPath + Constants.poiXmlMyselfPath,
+      Constants.gbkEncoding))
 
-    val poiMyself: RDD[String] = getPoiString(WordUtils.convert(sc, Constants.poiXmlMyselfPath, Constants.gbkEncoding))
-
-    val poi: RDD[String] = sc.union(poiNochange, poiBus, poiMyself)
+    val poi: RDD[String] = sc.union(poiNochange, poiMyself)
 
     return poi
   }
@@ -66,10 +70,12 @@ object PoiService {
 
 
   def parsePoi(x: Node): Poi = {
+
     val poi = new Poi
     poi.name = x.\("SRC_NAME").text
     poi.city = x.\("SRC_CITY").text
     poi.dataId = "1_" + x.\("DATAID").text
+
     val guid = x.\("GUID").text
     if (!(guid).isEmpty) poi.guid = guid
     poi.lat = x.\("SRC_X").text
@@ -95,6 +101,10 @@ object PoiService {
 
     poi.introduction = x.\("INTRODUCTION").text
 
+    var comment = mutable.Map[String, String]()
+    var price = mutable.Map[String, String]()
+    var grade = mutable.Map[String, String]()
+
 
     val deepStr = x.\\("DEEP").text
     if (!deepStr.isEmpty) {
@@ -107,55 +117,94 @@ object PoiService {
 
         val items = deepXml \ "additional" \ "data" \ "items" \ "item"
 
+
+
         for (item <- items) {
 
           val source = item.attributes("source").text
 
           source match {
-            case "DIANPING" =>
+            case Constants.DIANPING =>
 
               //其他类评论数
               val recordCount = (item \ "ReviewList" \ "RecordCount").text
-              if (!(recordCount).isEmpty) poi.recordCount = featureValueToNumber(recordCount)
+              if (is_valid(recordCount)) comment += (Constants.DIANPING -> featureValueToNumber
+              (recordCount))
 
               //其他类价格
               val avgPrice = (item \ "Shop" \ "AvgPrice").text
-              if (!(avgPrice).isEmpty) poi.avgPrice = featureValueToNumber(avgPrice)
+              if (is_valid(avgPrice)) price += (Constants.DIANPING -> featureValueToNumber(avgPrice))
 
               //其他类星级打分
               val scoremap = (item \ "Shop" \ "Scoremap").text
-              if (!(scoremap).isEmpty) poi.scoremap = featureValueToNumber(scoremap)
+              if (is_valid(scoremap)) grade += (Constants.DIANPING -> featureValueToNumber(scoremap))
 
-            case "ELONG" =>
+            case Constants.CTRIP =>
               //酒店评论数
               val hotelcommentnum = (item \ "hotelcommentnum").text
-              if (!(hotelcommentnum).isEmpty) poi.hotelcommentnum = featureValueToNumber(hotelcommentnum)
+              if (is_valid(hotelcommentnum)) comment += (Constants.CTRIP -> featureValueToNumber(hotelcommentnum))
 
               //酒店价格
-              val minPrice = (item \ "minPrice" \ "hotelroomprice").text
-              if (!(minPrice).isEmpty) poi.minprice = featureValueToNumber(minPrice)
+              val hotelrooms: NodeSeq = (item \ "hotelrooms" \ "hotelroom")
+              val priceList = hotelrooms.map(x => (x \ "hotelroomprice").text.toDouble)
+              if (!priceList.isEmpty){
+                val minPrice = min(priceList.toList).toString
+                if (is_valid(minPrice)) price += (Constants.CTRIP -> featureValueToNumber
+                (minPrice))
+              }
+
 
               //酒店星级打分
               val hotelrank = (item \ "hotelrank").text
-              if (!(hotelrank).isEmpty) poi.hotelrank = featureValueToNumber(hotelrank)
+              if (is_valid(hotelrank)) grade += (Constants.CTRIP -> featureValueToNumber
+              (hotelrank))
 
-            case "TONGCHENG" =>
+            case Constants.ZHUNA =>
+              //酒店评论数
+              val hotelcommentnum = (item \ "hotelcommentnum").text
+              if (is_valid(hotelcommentnum)) comment += (Constants.ZHUNA -> featureValueToNumber(hotelcommentnum))
+
+              //酒店价格
+              val minPrice = (item \ "minPrice" \ "hotelroomprice").text
+              if (is_valid(minPrice)) price += (Constants.ZHUNA -> featureValueToNumber(minPrice))
+
+              //酒店星级打分
+              val hotelrank = (item \ "hotelrank").text
+              if (is_valid(hotelrank)) grade += (Constants.ZHUNA -> featureValueToNumber((hotelrank.toDouble * 0.05)
+                .toString))
+
+
+            case Constants.TONGCHENG =>
 
               //景点类评论数
               val commentcount = (item \ "commentcount").text
-              if (!(commentcount).isEmpty) poi.commentcount = featureValueToNumber(commentcount)
+              if (is_valid(commentcount)) comment += (Constants.TONGCHENG -> featureValueToNumber(commentcount))
 
               //景点类价格
               val scenicPrice = (item \ "price").text
-              if (!(scenicPrice).isEmpty) poi.scenicPrice = featureValueToNumber(scenicPrice)
+              if (is_valid(scenicPrice)) price += (Constants.TONGCHENG -> featureValueToNumber(scenicPrice))
 
               //景点类星级打分
               val praise = (item \ "praise").text
-              if (!(praise).isEmpty) poi.praise = featureValueToNumber(praise)
-            case "58" =>
+              if (is_valid(praise)) grade += (Constants.TONGCHENG -> featureValueToNumber((praise.toDouble * 0.05).toString))
+            case Constants.WUBA =>
               //房地产价格
               val sellingPrice = (item \ "poi" \ "selling_price").text
-              if (!(sellingPrice).isEmpty) poi.sellingPrice = featureValueToNumber(sellingPrice)
+              if (is_valid(sellingPrice)) price += (Constants.WUBA -> featureValueToNumber(sellingPrice))
+
+            case Constants.CTRIPSCENERY =>
+              //景点类评论数
+              val commentcount = (item \ "commentcount").text
+              if (is_valid(commentcount)) comment += (Constants.CTRIPSCENERY -> featureValueToNumber(commentcount))
+
+              //景点类价格
+              val scenicPrice = (item \ "CtripPrice").text
+              if (is_valid(scenicPrice)) price += (Constants.CTRIPSCENERY -> featureValueToNumber(scenicPrice))
+
+              //景点类星级打分
+              val praise = (item \ "praise").text
+              if (is_valid(praise)) grade += (Constants.CTRIPSCENERY -> featureValueToNumber(praise))
+
 
             case everythingElse =>
               None
@@ -170,28 +219,96 @@ object PoiService {
       }
 
       if (poi.category.equals("宾馆饭店")) {
-        poi.price = poi.minprice
-        poi.grade = poi.hotelrank
-        poi.commentNum = poi.hotelcommentnum
+
+        if (comment.contains(Constants.CTRIP)) {
+          poi.commentNum = featureValueToNumber(comment(Constants.CTRIP))
+        } else if (comment.contains(Constants.ZHUNA)) {
+          poi.commentNum = featureValueToNumber(comment(Constants.ZHUNA))
+        } else if (comment.contains(Constants.DIANPING)) {
+          poi.commentNum = featureValueToNumber(comment(Constants.DIANPING))
+        }
+
+        if (price.contains(Constants.CTRIP)) {
+          poi.price = featureValueToNumber(price(Constants.CTRIP))
+        } else if (price.contains(Constants.ZHUNA)) {
+          poi.price = featureValueToNumber(price(Constants.ZHUNA))
+        } else if (price.contains(Constants.DIANPING)) {
+          poi.price = featureValueToNumber(price(Constants.DIANPING))
+        }
+
+        if (grade.contains(Constants.CTRIP)) {
+          poi.grade = featureValueToNumber(grade(Constants.CTRIP))
+        } else if (grade.contains(Constants.ZHUNA)) {
+          poi.grade = featureValueToNumber((grade(Constants.ZHUNA)))
+        } else if (grade.contains(Constants.DIANPING)) {
+          poi.grade = featureValueToNumber(grade(Constants.DIANPING))
+        }
+
       }
       else if (poi.category.equals("旅游景点")) {
-        poi.price = poi.scenicPrice
-        poi.grade = poi.praise
-        poi.commentNum = poi.commentcount
+
+
+        if (comment.contains(Constants.CTRIPSCENERY)) {
+          poi.commentNum = featureValueToNumber(comment(Constants.CTRIPSCENERY))
+        } else if (comment.contains(Constants.TONGCHENG)) {
+          poi.commentNum = featureValueToNumber(comment(Constants.TONGCHENG))
+        } else if (comment.contains(Constants.DIANPING)) {
+          poi.commentNum = featureValueToNumber(comment(Constants.DIANPING))
+
+        }
+
+        if (price.contains(Constants.CTRIPSCENERY)) {
+          poi.price = featureValueToNumber(price(Constants.CTRIPSCENERY))
+        } else if (price.contains(Constants.TONGCHENG)) {
+          poi.price = featureValueToNumber(price(Constants.TONGCHENG))
+        } else if (price.contains(Constants.DIANPING)) {
+          poi.price = featureValueToNumber(price(Constants.DIANPING))
+
+        }
+
+        if (grade.contains(Constants.CTRIPSCENERY)) {
+          poi.grade = featureValueToNumber(grade(Constants.CTRIPSCENERY))
+        } else if (grade.contains(Constants.TONGCHENG)) {
+          poi.grade = featureValueToNumber(grade(Constants.TONGCHENG))
+        } else if (grade.contains(Constants.DIANPING)) {
+          poi.grade = featureValueToNumber(grade(Constants.DIANPING))
+
+        }
+
       }
       else if (poi.category.equals("房地产")) {
-        poi.price = poi.sellingPrice
-        poi.grade = poi.scoremap
-        poi.commentNum = poi.recordCount
+
+        if (price.contains(Constants.WUBA)) {
+          poi.price = featureValueToNumber(price(Constants.WUBA))
+        }
       }
       else {
-        poi.price = poi.avgPrice
-        poi.grade = poi.scoremap
-        poi.commentNum = poi.recordCount
+
+        if (comment.contains(Constants.DIANPING)) {
+          poi.commentNum = featureValueToNumber(comment(Constants.DIANPING))
+        }
+        if (price.contains(Constants.DIANPING)) {
+          poi.price = featureValueToNumber(price(Constants.DIANPING))
+        }
+        if (grade.contains(Constants.DIANPING)) {
+          poi.grade = featureValueToNumber(grade(Constants.DIANPING))
+        }
       }
     }
     return poi
   }
+
+  def is_valid(info: String): Boolean = {
+
+    if (info.isEmpty || info.equals("0") || info.equals("0.0")) {
+      return false
+    } else {
+      return true
+    }
+
+
+  }
+
 
   /**
     * 提取品牌
@@ -199,44 +316,37 @@ object PoiService {
     * @param keyword
     * @return
     */
-  private def getBrand(keyword: String): String = {
-//    if (StringUtils.isBlank(keyword)) {
-//      return " "
-//    }
-    val tagLSBrand: String = ".*LS:(.*)"
-    val tagALSBrand: String = ".*ALS:(.*)"
+  def getBrand(keyword: String): String = {
+    //    if (StringUtils.isBlank(keyword)) {
+    //      return " "
+    //    }
 
-    var brandSet: Set[String] = Set[String]()
+    val brands = keyword.split(",").filter(x => x.contains("$$ALS") || x.contains("$$LS")).map(x => {
 
-    val pLsTagBrand: Pattern = Pattern.compile(tagLSBrand)
-    val mLsTagBrand: Matcher = pLsTagBrand.matcher(keyword)
+      val ss = x.endsWith("$$")
+      val start: Int = x.indexOf(":")
+      val end: Int = x.length - 2
+      x.substring(start + 1, end)
 
-    val pAlsTagBrand: Pattern = Pattern.compile(tagALSBrand)
-    val mAlsTagBrand: Matcher = pAlsTagBrand.matcher(keyword)
+    }).distinct.mkString(",")
 
 
-    if (mLsTagBrand.matches) {
-      val currentBrand: String = mLsTagBrand.group(1)
-      val end: Int = currentBrand.indexOf("$")
-      val brand: String = currentBrand.substring(0, end)
-      brandSet = brandSet.+(brand)
-    }
-    if (mAlsTagBrand.matches()) {
-      val currentBrand: String = mAlsTagBrand.group(1)
-      val end: Int = currentBrand.indexOf("$")
-      val brand: String = currentBrand.substring(0, end)
-      brandSet = brandSet.+(brand)
-    }
-
-    val brands = brandSet.mkString(",")
     if (StringUtils.isBlank(keyword)) {
       return " "
     }
     return brands
   }
 
+  val df: DecimalFormat = new DecimalFormat("0")
 
-  private def featureValueToNumber(fieldValue: String): String = {
+  def featureValueToNumber(fieldValue: String): String = {
+
+    //    if (StringUtils.isBlank(fieldValue)){
+    //      return "0.0"
+    //    }
+    //
+    //    return df.format(fieldValue.toDouble)
+
 
     var newFieldValue = "0"
     if (fieldValue.contains(".")) newFieldValue = fieldValue.substring(0, fieldValue.indexOf("."))
@@ -248,13 +358,13 @@ object PoiService {
 
 
   def main(args: Array[String]) {
-    val keyword: String = "$$TP:TP10006$$,$$DFB:美团团购$$,$$ALS:云南过桥米线$$,$$DFB:美团团购-餐饮团购$$,$$DFB:餐饮美食$$," +
-      "$$DFB:餐饮美食-快餐小吃$$," +
-      "$$DG:点评美食-快餐简餐$$,$$FB:餐饮美食-快餐小吃-中式快餐-云南过桥米线-快餐$$,$$LS:云南过桥米线$$,$$RC:云南过桥米线-云南过桥米线馆-云南过桥米线坊-云南过桥米线饭庄-云南过桥米线麻辣烫-云南过桥米线家和店-云南过桥米线滇城小镇-云南过桥米线麻辣土豆粉-云南过桥米线/黄焖鸡米饭-云南过桥米线老四川麻辣烫$$,$$RC:其它快餐小吃$$"
+    val keyword: String = "$$NEWMANUAL$$,$$AFB:汽车服务-4S店-沃尔沃4S店-沃尔沃亚太$$,$$AFB:汽车服务-4S店-沃尔沃4S店-进口沃尔沃$$,$$ALS:沃尔沃4S店$$," +
+      "$$ALS:沃尔沃亚太$$,$$ALS:进口沃尔沃$$,$$DG:点评爱车-4S店-汽车销售$$"
 
-    val key = ""
+    //,$$ALS:云南过桥米线$$
+    val key = "1111"
 
-    val brand = getBrand(keyword = key)
+    val brand = getBrand(keyword = keyword)
 
     print(brand)
   }
